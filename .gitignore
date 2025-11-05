@@ -1,0 +1,22 @@
+# Ignora dipendenze, build e env locali
+node_modules/
+**/node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build / dist
+/build
+client/build
+dist
+
+# Env locali
+.env
+client/.env
+server/.env
+.env.local
+.env.*.local
+
+# Sistema
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
