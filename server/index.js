@@ -77,7 +77,7 @@ io.on('connection', (socket) => {
     }
 
     const stats = getRoomStats();
-    console.log(`👤 Utente ${userData.username} si è unito alla live room.`);
+    console.log(` Utente ${userData.username} si è unito alla live room.`);
 
     socket.to(liveRoom.roomId).emit('user-joined', {
       username: userData.username,
@@ -294,7 +294,7 @@ function sendLiveRoomUpdate() {
   };
 
   io.to(liveRoom.roomId).emit('live-room-update', roomState);
-  console.log(`📊 Live room update: ${streamers.length} streamer, ${liveRoom.viewers.size} viewer`);
+  console.log(` Live room update: ${streamers.length} streamer, ${liveRoom.viewers.size} viewer`);
 }
 
 server.listen(PORT, () => {
