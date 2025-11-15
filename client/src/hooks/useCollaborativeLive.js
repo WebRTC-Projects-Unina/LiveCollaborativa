@@ -27,7 +27,7 @@ export const useCollaborativeLive = () => {
     const pendingOffersRef = useRef(new Set()); // Traccia offer in corso
     const scheduledTimersRef = useRef(new Map()); // socketId => timeoutId (for scheduled createOffer)
     const generalTimersRef = useRef(new Set()); // generic timers to clear on cleanup
-
+    const pendingOffersTimeoutsRef = useRef(new Map()); // socketId => timeoutId (for pending offer timeouts)
 
     const iceServersRef = useRef({
         iceServers: [

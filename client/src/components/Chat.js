@@ -64,7 +64,9 @@ const Chat = () => {
 
             return () => {
                 clearInterval(connectionCheck);
-                socketService.removeAllListeners();
+                socketService.offMessage(handleMessage);
+                socketService.offUserJoined(handleUserJoined);
+                socketService.offUserLeft(handleUserLeft);
             };
         }
     }, [user, profile]);
