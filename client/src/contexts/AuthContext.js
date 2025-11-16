@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true); //impostata a true per mostrare caricamento iniziale
 
-    // GET PROFILE
+    
     const getProfile = async (userId) => {
         try {
             const { data, error } = await supabase
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // CREATE PROFILE
+    
     const createProfile = async (userId, username, email) => {
         try {
             const { data, error } = await supabase
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // CHECK USERNAME
+   
     const checkUsernameAvailable = async (username) => {
         try {
             const queryPromise = supabase
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // LOGIN
+    
     const signIn = async (loginField, password) => {
         try {
             setLoading(true);
@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // REGISTRAZIONE
+    
     const signUp = async (email, password, username) => {
         try {
             setLoading(true);
@@ -159,20 +159,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // LOGOUT
+    
     const signOut = async () => {
         try {
             await supabase.auth.signOut();
             setUser(null);
             setProfile(null);
-            window.location.reload();
+            //window.location.reload(); // Problemi con firefox
         } catch (error) {
             console.error('Errore logout:', error);
-            window.location.reload();
+            //window.location.reload();
         }
     };
 
-    // LOAD PROFILE
+    
     const loadUserProfile = async (user) => {
         try {
             let userProfile = await getProfile(user.id);
@@ -200,7 +200,7 @@ export const AuthProvider = ({ children }) => {
 
         const initAuth = async () => {
             try {
-                // RECUPERA SESSIONE ESISTENTE (per persistenza dopo refresh)
+                // Recupero sessione (es. dopo un refresh)
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (mounted) {
@@ -212,7 +212,7 @@ export const AuthProvider = ({ children }) => {
                     setLoading(false);
                 }
 
-                // LISTENER PER CAMBIAMENTI AUTENTICAZIONE - messo a disposizione da Supabase
+                // Listener per cambiamenti autenticazione, messo a disposizione da Supabase
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(
                     async (event, session) => {
                         console.log(' Auth event:', event);
@@ -258,6 +258,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
+        // Qualsiasi componente dentro MainApp dovrà poter accedere ad useAuth()
         <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>

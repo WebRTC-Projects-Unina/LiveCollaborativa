@@ -16,8 +16,8 @@ const Auth = () => {
 
     // USERNAME CHECK con doppio timeout di sicurezza
     useEffect(() => {
-        if (!isLogin && username && username.length >= 3) {
-            const timeoutId = setTimeout(async () => {
+        if (!isLogin && username && username.length >= 1) {
+            const timeoutId = setTimeout(async () => { //avvia un timer
                 console.log('[AUTH-FORM] Check username:', username);
                 setUsernameStatus({ checking: true, available: null });
                 
@@ -49,7 +49,7 @@ const Auth = () => {
         } else {
             setUsernameStatus({ checking: false, available: null });
         }
-    }, [username, isLogin, checkUsernameAvailable]);//Invece di cambiare ad ogni render, cambio solo quando cambiano questi valori
+    }, [username, isLogin, checkUsernameAvailable]); //Invece di cambiare ad ogni render, cambio solo quando cambiano questi valori
 
     useEffect(() => { //Così quando cambio stato non restano falsi indicatori
         setUsernameStatus({ checking: false, available: null });
@@ -227,7 +227,7 @@ const Auth = () => {
                         marginBottom: '1rem',
                         fontSize: '0.9rem'
                     }}>
-                        ⚠️ {error}
+                         {error}
                     </div>
                 )}
                 
@@ -414,11 +414,11 @@ const Auth = () => {
                         }}
                     >
                         {submitting ? (
-                            isLogin ? '🔄 Accesso...' : '🔄 Registrazione...'
+                            isLogin ? ' Accesso...' : ' Registrazione...'
                         ) : (!isLogin && usernameStatus.checking) ? (
                             '⏳ Verifico username...'
                         ) : (
-                            isLogin ? '🔑 Accedi' : '📝 Registrati'
+                            isLogin ? ' Accedi' : ' Registrati'
                         )}
                     </button>
                 </form>

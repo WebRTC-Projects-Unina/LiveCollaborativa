@@ -8,13 +8,14 @@ class SocketService {
         this.listeners = new Map();
     }
 
-    on(event, callback) { // Registrazione listener
+    on(event, callback) { // Registrazione listener per problemi di race condition
         if (!this.listeners.has(event)) {
-            this.listeners.set(event, new Set()); // Insieme di callback per l'evento
+            this.listeners.set(event, new Set());
         }
-        this.listeners.get(event).add(callback); // Aggiungi callback all'insieme
+        this.listeners.get(event).add(callback); // Aggiunge callback all'insieme
         if (this.socket) {
-            this.socket.on(event, callback); // Registra sul socket
+            // Se l'utente è connesso, registra subito il listener per evitare race condition
+            this.socket.on(event, callback); 
         }
     }
 
@@ -42,9 +43,10 @@ class SocketService {
     }
 
     connect(userData) {
-        if (!this.socket) {
+        this.userData = userData;
+        if (!this.socket) { // Se non c'è una socket attiva, si crea una nuova connessione
             const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5050';
-            console.log('Connessione Socket.io: ' REACT_APP_SOCKET_URL);
+            console.log('Connessione Socket.io: ', SOCKET_URL);
             
             this.socket = io(SOCKET_URL, {
                 transports: ['websocket', 'polling'],
@@ -131,9 +133,7 @@ class SocketService {
     }
 
     onMessage(callback) {
-        if (this.socket) {
-            this.socket.on('new-message', callback);
-        }
+        this.on('new-message', callback);
     }
     
     offMessage(callback) { 
@@ -142,9 +142,7 @@ class SocketService {
 
 
     onUserJoined(callback) {
-        if (this.socket) {
-            this.socket.on('user-joined', callback);
-        }
+        this.on('user-joined', callback);
     }
 
     offUserJoined(callback) { 
@@ -153,9 +151,7 @@ class SocketService {
 
 
     onUserLeft(callback) {
-        if (this.socket) {
-            this.socket.on('user-left', callback);
-        }
+        this.on('user-left', callback);
     }
 
     offUserLeft(callback) { 
@@ -231,7 +227,7 @@ class SocketService {
     onIceCandidate(callback) { this.on('ice-candidate', callback); }
     offIceCandidate(callback) { this.off('ice-candidate', callback); }
 
-    // === CONNESSIONE: helper per componenti reagire a connect/disconnect senza polling ===
+    // === CONNESSIONE ===
     onConnect(callback) { this.on('connect', callback); }
     offConnect(callback) { this.off('connect', callback); }
 
@@ -246,9 +242,9 @@ class SocketService {
             hasSocket: !!this.socket
         };
     }
-}
 
-/*
+
+
     // === CLEANUP ===
     removeAllListeners() {
         if (this.socket) {
@@ -272,15 +268,6 @@ class SocketService {
             this.socket.removeAllListeners('ice-candidate');
         }
     }
-
-    // Metodo per verificare stato connessione
-    getConnectionStatus() {
-        return {
-            connected: this.connected,
-            socketId: this.socket?.id || null,
-            hasSocket: !!this.socket
-        };
-    }
 }
-*/
-export default new SocketService();
+
+export default new SocketService(); // Singleton, così tutti sono su un'unica connessione

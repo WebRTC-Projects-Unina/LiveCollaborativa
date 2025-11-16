@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Auth from './components/Auth';
 import Chat from './components/Chat';
 import LiveRoom from './components/LiveRoom';
+import socketService from './services/socketService';
 import './App.css';
 
 const MainApp = () => {
   const { user, loading } = useAuth();
   
-  // Loading semplice e veloce
   if (loading) {
     return (
       <div style={{
@@ -53,6 +53,25 @@ const Dashboard = () => {
   
   const displayUsername = profile?.username || user?.email?.split('@')[0] || 'Utente';
   
+  useEffect(() => {
+    // Connetti al socket appena la Dashboard viene caricata
+    if (user && profile) {
+      const userData = {
+        id: user.id,
+        email: user.email,
+        username: profile.username || user.email.split('@')[0]
+      };
+      console.log('[Dashboard] Connessione Socket.io...');
+      socketService.connect(userData);
+
+      // al logout ci disconnettiamo
+      return () => {
+        console.log('[Dashboard] Disconnessione Socket.io...');
+        socketService.disconnect();
+      };
+    }
+  }, [user, profile]);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -76,10 +95,10 @@ const Dashboard = () => {
           borderBottom: '1px solid #eee',
           paddingBottom: '1rem'
         }}>
-          <h1 style={{ margin: 0, color: '#333' }}>WebRTC Live Collaborativa</h1>
+          <h1 style={{ margin: 0, color: '#333' }}>Collaborative Live</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ color: '#666', fontSize: '0.9rem' }}>
-              Ciao, <strong>{displayUsername}</strong>
+              Hello, <strong>{displayUsername}</strong>
             </span>
             <button
               onClick={signOut}
@@ -109,31 +128,19 @@ const Dashboard = () => {
           <Chat />
         </div>
 
-        {/* Footer */}
-        <div style={{
-          marginTop: '2rem',
-          padding: '1rem',
-          backgroundColor: '#e9ecef',
-          borderRadius: '4px',
-          textAlign: 'center',
-          color: '#6c757d'
-        }}>
-          Sistema Live Collaborativo
-        </div>
-
         {/* Debug Info */}
-        {process.env.NODE_ENV === 'development' && (
+        {/*process.env.NODE_ENV === 'development' && (
           <div style={{
-            marginTop: '1rem',
+            marginTop: '1.5rem',
             padding: '0.5rem',
-            backgroundColor: '#f8f9fa',
+            backgroundColor: '#f60f0fff',
             borderRadius: '4px',
             fontSize: '0.7rem',
-            color: '#666'
+            color: '#db1717ff'
           }}>
             User: {user?.email} | Username: {profile?.username} | Display: {displayUsername}
           </div>
-        )}
+        )*/}
       </div>
     </div>
   );

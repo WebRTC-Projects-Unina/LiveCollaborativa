@@ -16,18 +16,18 @@ export const useCollaborativeLive = () => {
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
 
-    // Riferimenti e strutture mutabili
+    // Riferimenti
     const localVideoRef = useRef(null); //ref video locale, dove viene mostrata la preview della camera
     const localStreamRef = useRef(null); //ref allo stream locale, serve per gestire i track senza rinegoziare
     const remoteStreamsRefs = useRef({}); //ref agli stream remoti, mappa socketId => videoRef
     const peerConnections = useRef({}); //mappa socketId => RTCPeerConnection, permette di gestire separatamente offer/answer per ogni peer
     const listenersSetupRef = useRef(false); //per assicurarsi che i listener vengano settati una sola volta
     const needsP2PSetupRef = useRef(false); //indica se è necessario fare setup P2P (dopo join live)
-    const isStreamingRef = useRef(false); //traccia lo stato isStreaming in modo mutabile
+    const isStreamingRef = useRef(false); //traccia lo stato isStreaming in modo da non avere problemi nei timer
     const pendingOffersRef = useRef(new Set()); // Traccia offer in corso
-    const scheduledTimersRef = useRef(new Map()); // socketId => timeoutId (for scheduled createOffer)
-    const generalTimersRef = useRef(new Set()); // generic timers to clear on cleanup
-    const pendingOffersTimeoutsRef = useRef(new Map()); // socketId => timeoutId (for pending offer timeouts)
+    const scheduledTimersRef = useRef(new Map()); // registro di timer pianificati
+    const generalTimersRef = useRef(new Set()); // registro di timer generici
+    const pendingOffersTimeoutsRef = useRef(new Map()); // timer per le offerte
 
     const iceServersRef = useRef({
         iceServers: [
@@ -55,7 +55,7 @@ export const useCollaborativeLive = () => {
         isStreamingRef.current = isStreaming;
     }, [isStreaming]); // Aggiorna ref mutabile quando isStreaming cambia
 
-    // ========= HELPERS: timers / cleanup / peer close =========
+    // ========= HELPERS per timers, cleanup, peer close =========
 
     const clearAllScheduledTimers = useCallback(() => {
         scheduledTimersRef.current.forEach((id) => clearTimeout(id));
@@ -433,7 +433,7 @@ export const useCollaborativeLive = () => {
             const pc = createPeerConnection(data.from); //creo nuova connessione
             await pc.setRemoteDescription(new RTCSessionDescription(data.offer)); //setto descrizione remota
 
-            // se avevamo marcato pending offer verso questo peer, rimuovo            pendingOffersRef.current.delete(data.from);
+            // se avevamo marcato pending offer verso questo peer, rimuovo            
             pendingOffersRef.current.delete(data.from);
             clearPendingOfferTimeout(data.from);
 
@@ -608,8 +608,6 @@ export const useCollaborativeLive = () => {
                 const t = setTimeout(() => {
                     if (!isStreamingRef.current) return;
                     // double-check in roomState
-                    const exists = roomState.streamers.find(s => s.socketId === data.streamerId);
-                    if (!exists) return;
                     createOffer(data.streamerId);
                     scheduledTimersRef.current.delete(data.streamerId);
                 }, 800);
@@ -653,8 +651,8 @@ export const useCollaborativeLive = () => {
         handleIceCandidate,
         createOffer,
         closePeer,
-        clearAllScheduledTimers,
-        roomState.streamers
+        clearAllScheduledTimers
+        //roomState.streamers
     ]);
 
     useEffect(() => {

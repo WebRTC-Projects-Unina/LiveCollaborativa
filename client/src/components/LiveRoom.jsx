@@ -190,8 +190,8 @@ const LiveRoom = () => {
                         height: '100%',
                         color: '#666'
                     }}>
-                        <div style={{ fontSize: '2rem', marginBottom: '8px' }}>👤</div>
-                        <span>Slot libero</span>
+                        
+                        <span>Free Slot</span>
                     </div>
                 )}
             </div>
@@ -215,40 +215,8 @@ const LiveRoom = () => {
                 alignItems: 'center',
                 marginBottom: '1rem'
             }}>
-                <h3 style={{ margin: 0 }}>Live Room Collaborativa</h3>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#666' }}>
-                    <span>🎥 {roomState.streamers.length}/{roomState.maxStreamers}</span>
-                    <span>👁️ {roomState.viewersCount}</span>
-                    <span>👥 {roomState.totalUsers}</span>
-                </div>
-            </div>
-
-            {/* ERRORE */}
-            {error && (
-                <div style={{
-                    backgroundColor: '#f8d7da',
-                    color: '#721c24',
-                    padding: '0.75rem',
-                    borderRadius: '4px',
-                    marginBottom: '1rem'
-                }}>
-                    {error}
-                </div>
-            )}
-
-            {/* GRIGLIA VIDEO */}
-            <div style={{
-                flex: 1,
-                display: 'grid',
-                gridTemplateColumns: getGridLayout(),
-                gap: '1rem',
-                marginBottom: '1rem'
-            }}>
-                {[0, 1, 2, 3].map(renderVideoSlot)}
-            </div>
-
-            {/* BOTTONE */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                <h3 style={{ margin: 0 }}>Collaborative Live Room </h3>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                 {!isStreaming ? (
                     <button
                         onClick={requestJoinLive}
@@ -265,8 +233,8 @@ const LiveRoom = () => {
                         }}
                     >
                         {isRequestingJoin ? ' Entrando...' : 
-                         !canJoinLive ? '🚫 Live Piena' : 
-                         '🎥 Entra in Live'}
+                         !canJoinLive ? ' Live Piena' : 
+                         'Join Live'}
                     </button>
                 ) : (
                     <button
@@ -285,7 +253,40 @@ const LiveRoom = () => {
                          Esci
                     </button>
                 )}
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#666' }}>
+                    <span>Streamers: {roomState.streamers.length}/{roomState.maxStreamers}</span>
+                    <span>Viewers: {roomState.viewersCount}</span>
+                    <span>Users: {roomState.totalUsers}</span>
+                </div>
             </div>
+
+            {/* ERRORE */}
+            {error && (
+                <div style={{
+                    backgroundColor: '#f8d7da',
+                    color: '#721c24',
+                    padding: '0.75rem',
+                    borderRadius: '4px',
+                    marginBottom: '1rem'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            
+
+            {/* GRIGLIA VIDEO */}
+            <div style={{
+                flex: 1,
+                display: 'grid',
+                gridTemplateColumns: getGridLayout(),
+                gap: '1rem',
+                marginBottom: '1rem'
+            }}>
+                {[0, 1, 2, 3].map(renderVideoSlot)}
+            </div>
+
 
             {/* INFO STREAMING */}
             {isStreaming && (

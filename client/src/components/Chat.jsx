@@ -5,72 +5,73 @@ import socketService from '../services/socketService';
 const Chat = () => {
     const { user, profile } = useAuth();
     const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
+    const [newMessage, setNewMessage] = useState(''); // Messaggio in input
     const [isConnected, setIsConnected] = useState(false);
-    const messagesEndRef = useRef(null);
+    const messagesEndRef = useRef(null); // Riferimento per scroll automatico
 
     // Connessione Socket.IO
     useEffect(() => {
-        if (user && profile) {
-            console.log('[Chat] Inizializzazione connessione socket per:', profile.username);
-            
-            const userData = {
-                id: user.id,
-                email: user.email,
-                username: profile.username || user.email.split('@')[0]
-            };
+        console.log('[Chat] Registrazione listeners...');
 
-            // Connetti al socket
-            const socket = socketService.connect(userData);
-            
-            // Verifica stato connessione ogni secondo
-            const connectionCheck = setInterval(() => {
-                const status = socketService.getConnectionStatus();
-                console.log(' [Chat] Stato connessione:', status);
-                setIsConnected(status.connected);
-            }, 1000);
+        const handleMessage = (messageData) => {
+            console.log('[Chat] Nuovo messaggio ricevuto:', messageData);
+            setMessages(prev => [...prev, messageData]); // in React non si facciamo il push ma sostituiamo lo stato
+        };
+        
+        const handleUserJoined = (data) => {
+            console.log('[Chat] Utente entrato:', data);
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                username: 'Sistema',
+                message: data.message,
+                timestamp: new Date().toISOString(),
+                type: 'system'
+            }]);
+        };
 
-            // Setup listeners
-            const handleMessage = (messageData) => {
-                console.log('[Chat] Nuovo messaggio ricevuto:', messageData);
-                setMessages(prev => [...prev, messageData]);
-            };
+        const handleUserLeft = (data) => {
+            console.log(' [Chat] Utente uscito:', data);
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                username: 'Sistema',
+                message: data.message,
+                timestamp: new Date().toISOString(),
+                type: 'system'
+            }]);
+        };
 
-            const handleUserJoined = (data) => {
-                console.log('[Chat] Utente entrato:', data);
-                setMessages(prev => [...prev, {
-                    id: Date.now(),
-                    username: 'Sistema',
-                    message: data.message,
-                    timestamp: new Date().toISOString(),
-                    type: 'system'
-                }]);
-            };
+        // Gestione stato connessione
+        const handleConnect = () => {
+            console.log('[Chat] Rilevata connessione socket');
+            setIsConnected(true);
+        };
+        const handleDisconnect = () => {
+            console.log('[Chat] Rilevata disconnessione socket');
+            setIsConnected(false);
+        };
 
-            const handleUserLeft = (data) => {
-                console.log(' [Chat] Utente uscito:', data);
-                setMessages(prev => [...prev, {
-                    id: Date.now(),
-                    username: 'Sistema',
-                    message: data.message,
-                    timestamp: new Date().toISOString(),
-                    type: 'system'
-                }]);
-            };
+        // Registra tutti i listener
+        socketService.onMessage(handleMessage);
+        socketService.onUserJoined(handleUserJoined);
+        socketService.onUserLeft(handleUserLeft);
+        socketService.onConnect(handleConnect);
+        socketService.onDisconnect(handleDisconnect);
 
-            socketService.onMessage(handleMessage);
-            socketService.onUserJoined(handleUserJoined);
-            socketService.onUserLeft(handleUserLeft);
+        // Controlla lo stato della connessione al primo caricamento
+        const status = socketService.getConnectionStatus();
+        setIsConnected(status.connected);
 
-            return () => {
-                clearInterval(connectionCheck);
-                socketService.offMessage(handleMessage);
-                socketService.offUserJoined(handleUserJoined);
-                socketService.offUserLeft(handleUserLeft);
-            };
-        }
-    }, [user, profile]);
-
+        // Funzione di pulizia
+        return () => {
+            console.log('[Chat] Rimozione listeners...');
+            socketService.offMessage(handleMessage);
+            socketService.offUserJoined(handleUserJoined);
+            socketService.offUserLeft(handleUserLeft);
+            socketService.offConnect(handleConnect); //
+            socketService.offDisconnect(handleDisconnect); //
+        };
+    }, []);
+    
     // Scroll automatico
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,7 +109,7 @@ const Chat = () => {
             backgroundColor: '#f8f9fa',
             border: '1px solid #dee2e6',
             borderRadius: '8px',
-            height: '100%',
+            height: '600px',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden'
@@ -122,7 +123,7 @@ const Chat = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center'
             }}>
-                <h3 style={{ margin: 0, color: '#333', fontSize: '1.1rem' }}>💬 Chat Live</h3>
+                <h3 style={{ margin: 0, color: '#333', fontSize: '1.1rem' }}> Chat Live</h3>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
